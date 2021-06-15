@@ -46,7 +46,7 @@ end { Write-output $status }
 ################################################################
 
 #IMPORTANT - If you don't have a connected Azure account to PS, you use this to connect/auth
-#Connect-AzureRmAccount
+#Connect-AzAccount
 
 $overall_findings = New-Object System.Collections.Generic.List[System.Object]
 
@@ -62,17 +62,17 @@ If(!(test-path $global:results_path ))
       New-Item -ItemType Directory -Force -Path $path
 }
 
-$subscriptions = Get-AzureRmSubscription 
+$subscriptions = Get-Azubscription 
 $subscriptions = ($subscriptions.Name | sort | Get-Unique)
 foreach($line in $subscriptions) {
-	Select-AzureRmSubscription -SubscriptionName $line		
-	$servers = Get-AzureRmResource -ResourceType "Microsoft.AnalysisServices/servers" 
+	Select-AzSubscription -SubscriptionName $line		
+	$servers = Get-AzResource -ResourceType "Microsoft.AnalysisServices/servers" 
 	foreach($item in $servers) {
 		$resourcename = $item.("ResourceGroupName")
 		$subscriptionid = $item.("SubscriptionId")
 		$name = $item.("Name")
 		$location = $item.("Location")
-		$rules = (Get-AzureRmAnalysisServicesServer -ResourceGroupName $resourcename -Name $name).FirewallConfig.FirewallRules
+		$rules = (Get-AzAnalysisServicesServer -ResourceGroupName $resourcename -Name $name).FirewallConfig.FirewallRules
 		if(!$rules){				
 			$finding = $name+' has NO firewall'
 			$overall_findings.Add($finding)
