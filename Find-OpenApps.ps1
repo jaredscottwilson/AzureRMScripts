@@ -8,7 +8,7 @@
 ################################################################
 
 #IMPORTANT - If you don't have a connected Azure account to PS, you use this to connect/auth
-#Connect-AzureRmAccount
+#Connect-AzAccount
 
 #make sure to set your own path for files that have your final results
 $global:results_path = "C:\Users\$env:UserName\Desktop\AzureRm\results\"
@@ -19,18 +19,18 @@ If(!(test-path $global:results_path ))
       New-Item -ItemType Directory -Force -Path $path
 }
 
-$subscriptions = Get-AzureRmSubscription 
+$subscriptions = Get-AzRmSubscription 
 $subscriptions = ($subscriptions.Name | sort | Get-Unique)
 
 foreach($line in $subscriptions) {
 	$global:web = ""
-	Select-AzureRmSubscription -SubscriptionName $line
-	$webapps = (Get-AzureRmResource -ResourceType "Microsoft.Web/sites")
+	Select-AzSubscription -SubscriptionName $line
+	$webapps = (Get-AzResource -ResourceType "Microsoft.Web/sites")
 	foreach($item in $webapps) {
 		$resourcename = $item.("ResourceGroupName")
 		$name = $item.("Name")
 		$location = $item.("Location")
-		$url = (Get-AzureRmWebApp -ResourceGroupName $resourcename -Name $name).DefaultHostName
+		$url = (Get-AzWebApp -ResourceGroupName $resourcename -Name $name).DefaultHostName
 		try { $global:web = Invoke-WebRequest $url } 
 		catch { continue }
 		$statusCode = $global:web.statusCode
