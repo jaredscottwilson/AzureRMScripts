@@ -19,19 +19,18 @@ If(!(test-path $global:results_path ))
       New-Item -ItemType Directory -Force -Path $path
 }
 
-$subscriptions = Get-AzureRmSubscription 
+$subscriptions = Get-AzSubscription 
 $subscriptions = ($subscriptions.Name | sort | Get-Unique)
 foreach($line in $subscriptions) {
-	Select-AzureRmSubscription -SubscriptionName $line
-	$storage_account = Get-AzureRmResource -ResourceType "Microsoft.Storage/storageAccounts" 
+	Select-AzSubscription -SubscriptionName $line
+	$storage_account = Get-AzResource -ResourceType "Microsoft.Storage/storageAccounts" 
 	foreach($item in $storage_account) {
 		$resourcename = $item.("ResourceGroupName")
 		$subscriptionid = $item.("SubscriptionId")
 		$name = $item.("Name")
 
-		$open = Get-AzureStorageContainer  -Context ((Get-AzureRmStorageAccount -ResourceGroupName $resourcename -AccountName $name).Context) | Where { ($_.PublicAccess -ne "Off") -and ($_.LastModified.DateTime -gt ((get-date).AddHours(-36))) }
+		$open = Get-AzStorageContainer  -Context ((Get-AzStorageAccount -ResourceGroupName $resourcename -AccountName $name).Context) | Where { ($_.PublicAccess -ne "Off") -and ($_.LastModified.DateTime -gt ((get-date).AddHours(-36))) }
 		if ($open){
 			$open >> $global:results_path$date'publicBlob.txt'}
 		}
 	}
-
